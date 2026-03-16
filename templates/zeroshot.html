@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero-Shot Classification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            color: #764ba2;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .help-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: scale(1.05);
+        }
+
+        .results {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .predictions-container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .prediction-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .prediction-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .prediction-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.05em;
+        }
+
+        .prediction-confidence {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            display: none;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← Back to Home</a>
+
+        <div class="header">
+            <h1>Zero-Shot Classification</h1>
+            <p>Classify student feedback into custom categories without retraining the model</p>
+        </div>
+
+        <form id="zeroShotForm">
+            <div class="form-group">
+                <label for="text">Enter Student Feedback or Text:</label>
+                <textarea id="text" name="text"
+                    placeholder="Paste your feedback here... e.g., This course material is too difficult to understand"
+                    required></textarea>
+                <div class="help-text">💡 Enter any text feedback you want to classify into categories</div>
+            </div>
+
+            <div class="form-group">
+                <label for="labels">Define Custom Categories (comma-separated):</label>
+                <input type="text" id="labels" name="labels"
+                    placeholder="e.g., content difficulty, relevance, pace, assessment style, teaching quality"
+                    required>
+                <div class="help-text">💡 Separate multiple labels with commas. The model will classify your text into
+                    these categories.</div>
+            </div>
+
+            <button type="submit" class="btn-submit">Classify Feedback</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing feedback... Please wait.</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="results" id="results">
+            <h2 style="color: #667eea; margin-bottom: 20px;">Classification Results</h2>
+            <div style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="color: #666; margin: 0;"><strong>Input Text:</strong></p>
+                <p id="inputText" style="color: #333; margin: 5px 0 0 0; font-style: italic;"></p>
+            </div>
+            <div class="predictions-container" id="predictionsContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('zeroShotForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const text = document.getElementById('text').value.trim();
+            const labels = document.getElementById('labels').value.trim();
+
+            if (!text || !labels) {
+                document.getElementById('error').textContent = 'Please fill in all fields';
+                document.getElementById('error').classList.add('show');
+                return;
+            }
+
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('error').classList.remove('show');
+            document.getElementById('results').classList.remove('show');
+
+            try {
+                const response = await fetch('/api/zero-shot-classify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        labels: labels
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error processing request');
+                }
+
+                displayResults(data, text);
+            } catch (error) {
+                document.getElementById('error').textContent = ' ' + error.message;
+                document.getElementById('error').classList.add('show');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        });
+
+        function displayResults(data, inputText) {
+            document.getElementById('inputText').textContent = '"' + inputText + '"';
+
+            const container = document.getElementById('predictionsContainer');
+
+            let html = '';
+
+            // Sort by confidence in descending order
+            const sorted = data.predictions.sort((a, b) => b.confidence - a.confidence);
+
+            sorted.forEach((prediction, idx) => {
+                const confNum = parseFloat(prediction.confidence);
+                let colorClass = '#667eea';
+                if (confNum >= 80) colorClass = '#28a745';
+                else if (confNum >= 50) colorClass = '#ffc107';
+
+                html += `
+                    <div class="prediction-item">
+                        <div class="prediction-label">
+                            ${idx + 1}. <strong>${prediction.label}</strong>
+                        </div>
+                        <div class="prediction-confidence" style="background: ${colorClass};">
+                            ${prediction.confidence}%
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('results').classList.add('show');
+        }
+    </script>
+</body>
+
+</html>

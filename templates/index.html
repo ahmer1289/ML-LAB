@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Services — Advanced Systems</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Color Palette */
+        :root {
+            --bg: #f4f7f9;
+            /* Subtle blue-tinted background */
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #5d6d7e;
+            --border-color: #d5dbe0;
+
+            /* Solid Accent Colors */
+            --cls-color: #3498db;
+            /* Blue */
+            --gen-color: #1abc9c;
+            /* Teal */
+            --trn-color: #f39c12;
+            /* Orange */
+            --snt-color: #9b59b6;
+            /* Purple */
+            --qa-color: #e74c3c;
+            /* Red */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Navigation - Centered Branding */
+        nav {
+            padding: 1.5rem 5%;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            /* Centered the brand */
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-decoration: none;
+            color: var(--text-main);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Hero - Simplified */
+        header {
+            padding: 60px 5% 40px;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        /* Grid Layout */
+        .container {
+            padding: 0 5% 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        /* Card Styling */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 8px;
+            /* Slight rounding for beauty */
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Solid Color Accents */
+        .card.vision {
+            border-top: 5px solid var(--cls-color);
+        }
+
+        .card.textgen {
+            border-top: 5px solid var(--gen-color);
+        }
+
+        .card.translate {
+            border-top: 5px solid var(--trn-color);
+        }
+
+        .card.sentiment {
+            border-top: 5px solid var(--snt-color);
+        }
+
+        .card.voiceqa {
+            border-top: 5px solid var(--qa-color);
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            flex-grow: 1;
+        }
+
+        /* Solid Buttons */
+        .btn-link {
+            text-decoration: none;
+            color: #fff;
+            padding: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: center;
+            border-radius: 4px;
+            text-transform: uppercase;
+            transition: opacity 0.2s;
+        }
+
+        .vision .btn-link {
+            background: var(--cls-color);
+        }
+
+        .textgen .btn-link {
+            background: var(--gen-color);
+        }
+
+        .translate .btn-link {
+            background: var(--trn-color);
+        }
+
+        .sentiment .btn-link {
+            background: var(--snt-color);
+        }
+
+        .voiceqa .btn-link {
+            background: var(--qa-color);
+        }
+
+        .btn-link:hover {
+            opacity: 0.85;
+        }
+
+        /* Centered Footer */
+        footer {
+            padding: 40px 5%;
+            background: #fff;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <a href="/" class="nav-brand">ML Application Lab</a>
+    </nav>
+
+    <header>
+        <h1>Intelligence Hub</h1>
+        <p>Localized machine learning models for visual, textual, and auditory processing.</p>
+    </header>
+
+    <main class="container">
+        <div class="grid">
+
+            <div class="card vision">
+                <div class="card-icon"><i class="fas fa-camera-retro" style="color: var(--cls-color)"></i></div>
+                <h3>Image Classify</h3>
+                <p>Categorize visual inputs and demographic features using custom CNN architectures.</p>
+                <a href="/image" class="btn-link">Launch Vision</a>
+            </div>
+
+            <div class="card textgen">
+                <div class="card-icon"><i class="fas fa-pen-nib" style="color: var(--gen-color)"></i></div>
+                <h3>Text Generation</h3>
+                <p>Generate contextually relevant text sequences using transformer-based language models.</p>
+                <a href="/text_gen" class="btn-link">Launch GPT</a>
+            </div>
+
+            <div class="card translate">
+                <div class="card-icon"><i class="fas fa-language" style="color: var(--trn-color)"></i></div>
+                <h3>English to Urdu</h3>
+                <p>High precision English to Urdu translation utilizing neural mapping.</p>
+                <a href="/translate" class="btn-link">Launch Translator</a>
+            </div>
+
+            <div class="card sentiment">
+                <div class="card-icon"><i class="fas fa-microphone-alt" style="color: var(--snt-color)"></i></div>
+                <h3>Sentiment Analysis</h3>
+                <p>Detect emotional and vocal tone from audio speech files.</p>
+                <a href="/sentiment" class="btn-link">Launch Analysis</a>
+            </div>
+
+            <div class="card voiceqa">
+                <div class="card-icon"><i class="fas fa-headset" style="color: var(--qa-color)"></i></div>
+                <h3>Questions & Answers</h3>
+                <p>Voice driven question answering with natural language voice output.</p>
+                <a href="/qa" class="btn-link">Launch Assistant</a>
+            </div>
+
+            <div class="card sentiment" style="border-top-color: #16a085;">
+                <div class="card-icon"><i class="fas fa-tags" style="color: #16a085;"></i></div>
+                <h3>Zero-Shot Classification</h3>
+                <p>Classify student feedback into custom categories without model retraining.</p>
+                <a href="/zeroshot" class="btn-link" style="background: #16a085;">Launch Classifier</a>
+            </div>
+
+            <div class="card textgen" style="border-top-color: #2980b9;">
+                <div class="card-icon"><i class="fas fa-chart-bar" style="color: #2980b9;"></i></div>
+                <h3>K-Means Clustering</h3>
+                <p>Upload datasets and partition them into K clusters for pattern discovery.</p>
+                <a href="/kmeans" class="btn-link" style="background: #2980b9;">Launch K-Means</a>
+            </div>
+
+            <div class="card translate" style="border-top-color: #8e44ad;">
+                <div class="card-icon"><i class="fas fa-search" style="color: #8e44ad;"></i></div>
+                <h3>DBSCAN Clustering</h3>
+                <p>Density-based clustering for discovering arbitrary-shaped data clusters.</p>
+                <a href="/dbscan" class="btn-link" style="background: #8e44ad;">Launch DBSCAN</a>
+            </div>
+
+            <div class="card vision" style="border-top-color: #c0392b;">
+                <div class="card-icon"><i class="fas fa-link" style="color: #c0392b;"></i></div>
+                <h3>Apriori Algorithm</h3>
+                <p>Mine association rules from datasets for pattern and relationship discovery.</p>
+                <a href="/apriori" class="btn-link" style="background: #c0392b;">Launch Apriori</a>
+            </div>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2026 Advanced Machine Learning Assistant. All Rights Reserved.</p>
+    </footer>
+
+</body>
+
+</html>

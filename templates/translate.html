@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation — ML Lab</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #5d6d7e;
+            --border-color: #d5dbe0;
+            --trn-color: #f39c12;
+            /* Orange for Trans */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        nav {
+            padding: 1.2rem 5%;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            font-weight: 800;
+            font-size: 1rem;
+            text-decoration: none;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .container {
+            padding: 40px 5%;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .tool-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            border-top: 5px solid var(--trn-color);
+        }
+
+        .card-header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-header i {
+            margin-right: 12px;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #fafafa;
+            font-family: inherit;
+            resize: vertical;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            background: var(--trn-color);
+        }
+
+        .output-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .success-box {
+            background: #fdfaf0;
+            border: 1px solid #fef3c7;
+            color: #92400e;
+        }
+
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            color: #991b1b;
+        }
+
+        .urdu-text {
+            font-size: 1.5rem;
+            text-align: right;
+            font-family: 'Urdu Typesetting', 'Jameel Noori Nastaleeq', serif;
+        }
+
+        .loading {
+            text-align: center;
+            display: none;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <a href="/" class="back-link"><i class="fas fa-chevron-left"></i> BACK</a>
+        <a href="/" class="nav-brand">ML Application Lab</a>
+        <div style="width: 50px;"></div>
+    </nav>
+
+    <div class="container">
+        <section class="tool-card">
+            <div class="card-header">
+                <h3><i class="fas fa-language" style="color: var(--trn-color)"></i> English to Urdu</h3>
+            </div>
+            <div class="card-body">
+                <label>Source Text (English)</label>
+                <textarea id="translate-in" rows="6" placeholder="Enter text to translate..."></textarea>
+
+                <button id="trans-btn" class="btn">Execute Translation</button>
+
+                <div id="trans-loading" class="loading">
+                    <i class="fas fa-circle-notch fa-spin"></i> Mapping linguistics...
+                </div>
+
+                <div id="trans-result" class="output-box success-box">
+                    <small><b>Urdu Translation:</b></small>
+                    <p id="translate-out" class="urdu-text"></p>
+                </div>
+
+                <div id="trans-error" class="output-box error-box">
+                    <p id="trans-error-msg"></p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>© 2026 Advanced Machine Learning Assistant. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        document.getElementById('trans-btn').addEventListener('click', async () => {
+            const text = document.getElementById('translate-in').value;
+            if (!text.trim()) return;
+
+            const load = document.getElementById('trans-loading');
+            const resBox = document.getElementById('trans-result');
+            const errBox = document.getElementById('trans-error');
+
+            load.style.display = 'block';
+            resBox.style.display = 'none';
+            errBox.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const json = await res.json();
+                load.style.display = 'none';
+
+                if (json.error) {
+                    document.getElementById('trans-error-msg').textContent = json.error;
+                    errBox.style.display = 'block';
+                } else {
+                    document.getElementById('translate-out').textContent = json.text;
+                    resBox.style.display = 'block';
+                }
+            } catch (e) {
+                load.style.display = 'none';
+                document.getElementById('trans-error-msg').textContent = e.message;
+                errBox.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

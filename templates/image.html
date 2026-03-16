@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Classification — ML Lab</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #5d6d7e;
+            --border-color: #d5dbe0;
+            --accent: #3498db;
+            /* Blue for Vision */
+            --error: #e74c3c;
+            --success: #1abc9c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 1.2rem 5%;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            font-weight: 800;
+            font-size: 1rem;
+            text-decoration: none;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Container */
+        .container {
+            padding: 40px 5%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Main Card */
+        .main-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-top: 5px solid var(--accent);
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+        }
+
+        /* Form Styling */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: border-color 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent);
+        }
+
+        input[type="file"] {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg);
+        }
+
+        .btn-action {
+            display: block;
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-action:hover {
+            opacity: 0.9;
+        }
+
+        .btn-action:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* Preview Area */
+        #image-preview {
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        #preview-img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Result States */
+        .status-box {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--accent);
+        }
+
+        .result-success {
+            background: #ebf9f7;
+            border: 1px solid var(--success);
+        }
+
+        .result-error {
+            background: #fdf2f2;
+            border: 1px solid var(--error);
+        }
+
+        .res-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .label-text {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+            margin: 0;
+        }
+
+        .score-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(52, 152, 219, 0.2);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <a href="/" class="back-link"><i class="fas fa-chevron-left"></i> BACK</a>
+        <a href="/" class="nav-brand">ML Application Lab</a>
+        <div style="width: 50px;"></div>
+    </nav>
+
+    <div class="container">
+        <main class="main-card">
+            <div class="header">
+                <h1>Vision System</h1>
+                <p>Upload a portrait to identify demographic classification.</p>
+            </div>
+
+            <form id="image-form">
+                <div class="upload-area">
+                    <i class="fas fa-cloud-upload-alt"
+                        style="font-size: 2rem; color: var(--accent); margin-bottom: 15px;"></i>
+                    <input type="file" id="image-input" name="image" accept="image/*" required>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Supports JPG, PNG, and WebP</p>
+                </div>
+
+                <div id="image-preview">
+                    <img id="preview-img" src="">
+                </div>
+
+                <button type="submit" class="btn-action" id="classify-btn">Analyze Image</button>
+            </form>
+
+            <div id="loading" class="status-box">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Processing Neural Layers...</p>
+                </div>
+            </div>
+
+            <div id="result" class="status-box result-success">
+                <div id="result-content"></div>
+            </div>
+
+            <div id="error" class="status-box result-error">
+                <p id="error-msg" style="color: var(--error); font-weight: 600;"></p>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <p>© 2026 Advanced Machine Learning Assistant. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        const imageForm = document.getElementById('image-form');
+        const imageInput = document.getElementById('image-input');
+        const loadingDiv = document.getElementById('loading');
+        const resultDiv = document.getElementById('result');
+        const errorDiv = document.getElementById('error');
+        const resultContent = document.getElementById('result-content');
+        const previewDiv = document.getElementById('image-preview');
+        const previewImg = document.getElementById('preview-img');
+
+        // Preview Functionality
+        imageInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                    previewDiv.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Form Submission
+        imageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const file = imageInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            // UI Reset
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+
+            try {
+                // Ensure this matches your Flask route exactly
+                const response = await fetch('/api/image_classify', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                loadingDiv.style.display = 'none';
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Success UI
+                const html = `
+                    <div class="res-grid">
+                        <div>
+                            <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">Class</span>
+                            <h2 class="label-text">${data.label.toUpperCase()}</h2>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">Confidence</span>
+                            <div class="score-text">${(data.score * 100).toFixed(1)}%</div>
+                        </div>
+                    </div>
+                    ${data.raw_predictions ? `
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.05); font-size: 0.8rem; color: var(--text-muted);">
+                            Probability: M: ${(data.raw_predictions[1] * 100).toFixed(1)}% | F: ${(data.raw_predictions[0] * 100).toFixed(1)}%
+                        </div>
+                    ` : ''}
+                `;
+
+                resultContent.innerHTML = html;
+                resultDiv.style.display = 'block';
+
+            } catch (err) {
+                loadingDiv.style.display = 'none';
+                document.getElementById('error-msg').textContent = err.message;
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

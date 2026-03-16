@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Answering — ML Lab</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* New Professional Theme Overlay */
+        :root {
+            --bg: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #5d6d7e;
+            --border-color: #d5dbe0;
+            --qa-color: #e74c3c;
+            /* Red accent for Voice/QA */
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            padding-top: 80px;
+        }
+
+        .navbar {
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar-brand {
+            color: var(--text-main) !important;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .service-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            border-top: 5px solid var(--qa-color);
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .service-header {
+            padding: 30px;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .service-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        /* Recording UI specific styles */
+        .record-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: none;
+            background: var(--qa-color);
+            color: white;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .record-btn.recording {
+            animation: pulse 1.5s infinite;
+            background: #c0392b;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 20px rgba(231, 76, 60, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+            }
+        }
+
+        .timer {
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        /* Button & Form Overrides */
+        .btn-gradient {
+            background: var(--text-main);
+            color: white;
+            border: none;
+        }
+
+        .btn-gradient:hover {
+            background: #1a252f;
+            color: white;
+        }
+
+        .form-control:focus {
+            border-color: var(--qa-color);
+            box-shadow: none;
+        }
+
+        hr {
+            opacity: 0.1;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container-lg">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-chevron-left me-2"></i>Back to Hub
+            </a>
+        </div>
+    </nav>
+
+    <div class="container-lg py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="service-card">
+                    <div class="service-header text-center">
+                        <div class="service-icon mx-auto" style="background: var(--qa-color);">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <h1 class="h4 mb-2 fw-bold">Voice Question Answering</h1>
+                        <p class="text-secondary mb-0">Ask questions using your voice based on the context provided.</p>
+                    </div>
+
+                    <div class="p-4 p-md-5">
+                        <form id="qa-form">
+                            <div class="mb-4">
+                                <label for="context-input" class="form-label fw-bold small text-uppercase text-muted">
+                                    Context
+                                </label>
+                                <textarea class="form-control" id="context-input" name="context" rows="4"
+                                    placeholder="Enter a paragraph to ask questions from..."></textarea>
+                            </div>
+
+                            <div class="mb-5 text-center" id="recording-section">
+                                <label class="form-label d-block fw-bold small text-uppercase text-muted mb-3">Option 1:
+                                    Record Question</label>
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <button type="button" id="record-btn" class="record-btn">
+                                        <i class="fas fa-microphone"></i>
+                                    </button>
+                                    <span id="timer" class="timer">00:00</span>
+                                </div>
+                                <small class="text-secondary d-block mt-3" id="record-status">Click mic to start
+                                    recording</small>
+                            </div>
+
+                            <div id="playback-preview" class="mb-5 text-center" style="display:none;">
+                                <label class="form-label d-block fw-bold small text-uppercase text-muted mb-3">Preview
+                                    Recording</label>
+                                <div class="p-4 bg-light rounded border mb-3">
+                                    <audio id="preview-audio" controls class="w-100 mb-3"></audio>
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <button type="button" id="submit-recorded-btn" class="btn btn-gradient px-4">
+                                            <i class="fas fa-check me-2"></i>Analyze
+                                        </button>
+                                        <button type="button" id="reset-record-btn"
+                                            class="btn btn-outline-secondary px-4">
+                                            <i class="fas fa-undo me-2"></i>Retry
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="position-relative mb-5 text-center">
+                                <hr>
+                                <span
+                                    class="position-absolute top-50 start-50 translate-middle px-3 text-muted small fw-bold"
+                                    style="background: #fff;">OR</span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="audio-input" class="form-label fw-bold small text-uppercase text-muted">
+                                    Option 2: Upload Audio
+                                </label>
+                                <div class="input-group">
+                                    <input type="file" class="form-control" id="audio-input" name="audio"
+                                        accept="audio/*">
+                                    <button class="btn btn-gradient px-4" type="submit" id="ask-btn">
+                                        <i class="fas fa-play me-2"></i>Ask
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div id="qa-loading" class="text-center py-4" style="display:none;">
+                            <div class="spinner-border text-danger" role="status"
+                                style="width: 2.5rem; height: 2.5rem;"></div>
+                            <p class="mt-3 text-secondary small">Processing audio and finding answer...</p>
+                        </div>
+
+                        <div id="qa-result" class="mt-4" style="display:none;">
+                            <div class="alert alert-success border-0 shadow-sm">
+                                <h6 class="alert-heading fw-bold mb-3"><i class="fas fa-check-circle me-2"></i>System
+                                    Answer</h6>
+                                <div id="qa-result-content"></div>
+                            </div>
+                        </div>
+
+                        <div id="qa-error" class="mt-4" style="display:none;">
+                            <div class="alert alert-danger border-0">
+                                <p id="qa-error-msg" class="mb-0 small"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Advanced Machine Learning Assistant. All Rights Reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/recorder.js"></script>
+    <script>
+        let timerInterval;
+        let seconds = 0;
+
+        function startTimer() {
+            seconds = 0;
+            document.getElementById('timer').textContent = "00:00";
+            timerInterval = setInterval(() => {
+                seconds++;
+                const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');
+                document.getElementById('timer').textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            document.getElementById('timer').textContent = "00:00";
+        }
+
+        async function processAudio(blobOrFile) {
+            const fd = new FormData();
+            if (blobOrFile instanceof Blob && !blobOrFile.name) {
+                const ext = blobOrFile.type.includes('wav') ? 'wav' : 'webm';
+                fd.append('audio', blobOrFile, `recording.${ext}`);
+            } else {
+                fd.append('audio', blobOrFile);
+            }
+
+            const context = document.getElementById('context-input').value;
+            if (context.trim()) {
+                fd.append('context', context);
+            }
+
+            document.getElementById('qa-loading').style.display = 'block';
+            document.getElementById('qa-result').style.display = 'none';
+            document.getElementById('qa-error').style.display = 'none';
+            document.getElementById('qa-form').style.opacity = '0.5';
+
+            try {
+                const res = await fetch('/api/qa_voice', { method: 'POST', body: fd });
+                document.getElementById('qa-loading').style.display = 'none';
+                document.getElementById('qa-form').style.opacity = '1';
+
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const html = `
+                        <p class="mb-2 small"><strong>Playback Answer:</strong></p>
+                        <audio controls class="w-100 mb-3" autoplay>
+                          <source src="${url}" type="audio/mpeg">
+                        </audio>
+                        <div class="text-end">
+                            <a href="${url}" download="answer.mp3" class="btn btn-sm btn-success">
+                              <i class="fas fa-download me-2"></i>Download MP3
+                            </a>
+                        </div>`;
+                    document.getElementById('qa-result-content').innerHTML = html;
+                    document.getElementById('qa-result').style.display = 'block';
+                } else {
+                    const txt = await res.text();
+                    let errorMsg = txt;
+                    try { const json = JSON.parse(txt); errorMsg = json.error || txt; } catch (e) { }
+                    document.getElementById('qa-error-msg').textContent = errorMsg;
+                    document.getElementById('qa-error').style.display = 'block';
+                }
+            } catch (e) {
+                document.getElementById('qa-error-msg').textContent = e.message;
+                document.getElementById('qa-error').style.display = 'block';
+                document.getElementById('qa-loading').style.display = 'none';
+                document.getElementById('qa-form').style.opacity = '1';
+            }
+        }
+
+        const recordBtn = document.getElementById('record-btn');
+        const recordStatus = document.getElementById('record-status');
+        const playbackPreview = document.getElementById('playback-preview');
+        const recordingSection = document.getElementById('recording-section');
+        const previewAudio = document.getElementById('preview-audio');
+        const submitRecordedBtn = document.getElementById('submit-recorded-btn');
+        const resetRecordBtn = document.getElementById('reset-record-btn');
+
+        let lastRecordedBlob = null;
+
+        recordBtn.addEventListener('click', async () => {
+            if (!AudioRecorder.getState()) {
+                try {
+                    await AudioRecorder.start();
+                    recordBtn.classList.add('recording');
+                    recordBtn.innerHTML = '<i class="fas fa-stop"></i>';
+                    recordStatus.textContent = "Recording... Click to stop.";
+                    startTimer();
+                    document.getElementById('qa-result').style.display = 'none';
+                    document.getElementById('qa-error').style.display = 'none';
+                } catch (err) { alert("Microphone access denied."); }
+            } else {
+                lastRecordedBlob = await AudioRecorder.stop();
+                recordBtn.classList.remove('recording');
+                recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                recordStatus.textContent = "Click mic to ask question";
+                stopTimer();
+                if (lastRecordedBlob) {
+                    previewAudio.src = URL.createObjectURL(lastRecordedBlob);
+                    recordingSection.style.display = 'none';
+                    playbackPreview.style.display = 'block';
+                }
+            }
+        });
+
+        submitRecordedBtn.addEventListener('click', () => { if (lastRecordedBlob) processAudio(lastRecordedBlob); });
+        resetRecordBtn.addEventListener('click', () => {
+            lastRecordedBlob = null;
+            previewAudio.src = '';
+            playbackPreview.style.display = 'none';
+            recordingSection.style.display = 'block';
+        });
+
+        document.getElementById('qa-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const f = document.getElementById('audio-input').files[0];
+            if (f) processAudio(f);
+        });
+    </script>
+</body>
+
+</html>

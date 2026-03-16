@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Means Clustering</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            color: #764ba2;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: scale(1.05);
+        }
+
+        .results {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .stats {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .stat-label {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            color: #333;
+        }
+
+        .visualization {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .visualization img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .visualization-title {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← Back to Home</a>
+
+        <div class="header">
+            <h1>K-Means Clustering</h1>
+            <p>Upload a CSV dataset and partition it into clusters</p>
+        </div>
+
+        <form id="kmeansForm">
+            <div class="form-group">
+                <label for="dataset">Upload CSV Dataset:</label>
+                <input type="file" id="dataset" name="dataset" accept=".csv" required>
+            </div>
+
+            <div class="form-group">
+                <label for="n_clusters">Number of Clusters (K):</label>
+                <input type="number" id="n_clusters" name="n_clusters" value="3" min="2" max="10" required>
+            </div>
+
+            <button type="submit" class="btn-submit">Cluster Data</button>
+        </form>
+
+        <div class="loading" id="loading">
+            Processing your data... Please wait.
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="results" id="results">
+            <h2 style="color: #667eea; margin-bottom: 20px;">Clustering Results</h2>
+
+
+            <div class="stats" id="statsContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('kmeansForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('dataset', document.getElementById('dataset').files[0]);
+            formData.append('n_clusters', document.getElementById('n_clusters').value);
+
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('error').classList.remove('show');
+            document.getElementById('results').classList.remove('show');
+
+            try {
+                const response = await fetch('/api/kmeans-cluster', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error processing request');
+                }
+
+                displayResults(data);
+            } catch (error) {
+                document.getElementById('error').textContent = ' ' + error.message;
+                document.getElementById('error').classList.add('show');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        });
+
+        function displayResults(data) {
+            const container = document.getElementById('statsContainer');
+            container.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-label">Number of Clusters</div>
+                    <div class="stat-value">${data.clusters.length}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Inertia</div>
+                    <div class="stat-value">${data.inertia.toFixed(2)}</div>
+                </div>
+                ${data.clusters.map((cluster, idx) => `
+                    <div class="stat-item">
+                        <div class="stat-label">Cluster ${cluster.cluster} - Size: ${cluster.size} points</div>
+                        <div class="stat-value">
+                            ${Object.entries(cluster.mean_values).map(([k, v]) =>
+                `<div>${k}: ${parseFloat(v).toFixed(2)}</div>`
+            ).join('')}
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+
+
+            document.getElementById('results').classList.add('show');
+        }
+    </script>
+</body>
+
+</html>
