@@ -7,28 +7,28 @@
 
 ## Features
 
-### 1. Image Classification 🖼️
+### 1. Image Classification
 - **Model:** Custom CNN  
 - **Task:** Binary classification (Male/Female)  
 - **Input:** Image file (JPG, PNG, etc.)  
 - **Output:** Classification label + confidence score  
 - **Launch:** `Launch Vision`
 
-### 2. Text Generation ✨
+### 2. Text Generation
 - **Model:** GPT-2 (Hugging Face Transformers)  
 - **Task:** Generate text continuations  
 - **Input:** Text prompt  
 - **Output:** Generated text  
 - **Launch:** `Launch GPT`
 
-### 3. English → Urdu Translation 🌐
+### 3. English → Urdu Translation
 - **Model:** Helsinki-NLP OPUS-MT  
 - **Task:** Translate English text to Urdu  
 - **Input:** English text  
 - **Output:** Urdu translation  
 - **Launch:** `Launch Translator`
 
-### 4. Sentiment Analysis 😊
+### 4. Sentiment Analysis
 - **Model:** RoBERTa-based Transformer  
 - **Task:** Analyze sentiment from audio  
 - **Input:** Audio file (MP3, WAV, etc.)  
@@ -36,7 +36,7 @@
 - **Output:** Transcribed text + sentiment label + confidence  
 - **Launch:** `Launch Analysis`
 
-### 5. Question Answering ❓
+### 5. Question Answering
 - **Model:** DistilBERT QA (SQuAD)  
 - **Task:** Voice-driven Q&A  
 - **Input:** Audio question  
